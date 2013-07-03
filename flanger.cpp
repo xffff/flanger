@@ -21,7 +21,7 @@ AudioEffect* createEffectInstance (audioMasterCallback audioMaster)
 
 //-------------------------------------------------------------------------------------------
 Flanger::Flanger (audioMasterCallback audioMaster)
-  : AudioEffectX (audioMaster, 1, 3)	// 1 program, 2 parameters only
+  : AudioEffectX (audioMaster, 1, 3)	// 1 program, 3 parameters only
 {
   setNumInputs (2);		  // stereo in
   setNumOutputs (2);		  // stereo out
