@@ -28,16 +28,16 @@ Flanger::Flanger (audioMasterCallback audioMaster)
   setNumOutputs (numchans);		  // stereo out
   setUniqueID ('Flanger');        // identify
   canProcessReplacing ();	  // supports replacing output
-  canDoubleReplacing ();	  // supports double precision processing
-  float* delta = new float[2];
-  gain = new float[2];
-  fwdhop = new float[2];
-  delaysize = new float[2];
-  rate = new float[2];
-  depth = new float[2];
-  writepos = new int[2];
-  readpos = new float[2];
-  delayline = new float*[2];
+  // canDoubleReplacing ();	  // supports double precision processing
+  float* delta = new float[numchans];
+  gain = new float[numchans];
+  fwdhop = new float[numchans];
+  delaysize = new float[numchans];
+  rate = new float[numchans];
+  depth = new float[numchans];
+  writepos = new int[numchans];
+  readpos = new float[numchans];
+  delayline = new float*[numchans];
   
   for(int i=0; i<numchans; ++i) {
     delta[i] = (delaysize[i] * rate[i]) / sampleRate;
@@ -241,8 +241,8 @@ VstInt32 Flanger::getVendorVersion ()
 //-----------------------------------------------------------------------------------------
 void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames)
 {
-  float* val = new float[2];
-  float* delayed = new float[2];
+  float* val = new float[numchans];
+  float* delayed = new float[numchans];
 
   for(int j=0; j<numchans; ++j)
     { fwdhop[j] = ((delaysize[j]*rate[j]*2)/sampleRate) + 1.0f; }
@@ -272,16 +272,16 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
 }
 
 //-----------------------------------------------------------------------------------------
-void Flanger::processDoubleReplacing (double** inputs, double** outputs, VstInt32 sampleFrames)
-{
-  double* in1  =  inputs[0];
-  double* in2  =  inputs[1];
-  double* out1 = outputs[0];
-  double* out2 = outputs[1];
-  double dGain = gain[0];
+// void Flanger::processDoubleReplacing (double** inputs, double** outputs, VstInt32 sampleFrames)
+// {
+//   double* in1  =  inputs[0];
+//   double* in2  =  inputs[1];
+//   double* out1 = outputs[0];
+//   double* out2 = outputs[1];
+//   double dGain = gain[0];
 
-  for(int i=0;i<sampleFrames;++i) {
-    out1[i] = in1[i] * dGain;
-    out2[i] = in2[i] * dGain;
-  } 
-}
+//   for(int i=0;i<sampleFrames;++i) {
+//     out1[i] = in1[i] * dGain;
+//     out2[i] = in2[i] * dGain;
+//   } 
+// }
