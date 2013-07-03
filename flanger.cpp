@@ -23,11 +23,11 @@ AudioEffect* createEffectInstance (audioMasterCallback audioMaster)
 Flanger::Flanger (audioMasterCallback audioMaster)
   : AudioEffectX (audioMaster, 1, 3)	// 1 program, 3 parameters only
 {
-  setNumInputs (2);		  // stereo in
-  setNumOutputs (2);		  // stereo out
+  setNumInputs (1);		  // stereo in
+  setNumOutputs (1);		  // stereo out
   setUniqueID ('Flanger');        // identify
   canProcessReplacing ();	  // supports replacing output
-  canDoubleReplacing ();	  // supports double precision processing
+  //  canDoubleReplacing ();	  // supports double precision processing
   gain = 1.f;			  // default to 0 dB
   float delta = (delaysize * rate) / sampleRate;
   fwdhop = delta + 1.0f;
@@ -171,9 +171,7 @@ VstInt32 Flanger::getVendorVersion ()
 void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames)
 {
   float* in1  =  inputs[0];
-  float* in2  =  inputs[1];
   float* out1 = outputs[0];
-  float* out2 = outputs[1];
   float val, delayed;
   fwdhop = ((delaysize*rate*2)/sampleRate) + 1.0f;
 
@@ -198,16 +196,16 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
 }
 
 //-----------------------------------------------------------------------------------------
-void Flanger::processDoubleReplacing (double** inputs, double** outputs, VstInt32 sampleFrames)
-{
-  double* in1  =  inputs[0];
-  double* in2  =  inputs[1];
-  double* out1 = outputs[0];
-  double* out2 = outputs[1];
-  double dGain = gain;
+// void Flanger::processDoubleReplacing (double** inputs, double** outputs, VstInt32 sampleFrames)
+// {
+//   double* in1  =  inputs[0];
+//   double* in2  =  inputs[1];
+//   double* out1 = outputs[0];
+//   double* out2 = outputs[1];
+//   double dGain = gain;
 
-  for(int i=0;i<sampleFrames;++i) {
-    out1[i] = in1[i] * dGain;
-    out2[i] = in2[i] * dGain;
-  } 
-}
+//   for(int i=0;i<sampleFrames;++i) {
+//     out1[i] = in1[i] * dGain;
+//     out2[i] = in2[i] * dGain;
+//   } 
+// }
