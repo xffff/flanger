@@ -29,7 +29,7 @@ Flanger::Flanger (audioMasterCallback audioMaster)
   setUniqueID ('Flanger');        // identify
   canProcessReplacing ();	  // supports replacing output
   canDoubleReplacing ();	  // supports double precision processing
-  float delta = new float[2];
+  float* delta = new float[2];
   gain = new float[2];
   fwdhop = new float[2];
   delaysize = new float[2];
@@ -49,9 +49,10 @@ Flanger::Flanger (audioMasterCallback audioMaster)
     writepos[i] = 0;
     readpos[i] = 0;  
     delayline[i] = new float[(int)delaysize];
+
+    // start with 0s
     memset(delayline[i], 0, delaysize[i] * sizeof(float));
   }
-
   delete [] delta;
   
   vst_strncpy (programName, "Default", kVstMaxProgNameLen);	// default program name
