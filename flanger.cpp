@@ -21,7 +21,7 @@ AudioEffect* createEffectInstance (audioMasterCallback audioMaster)
 
 //-------------------------------------------------------------------------------------------
 Flanger::Flanger (audioMasterCallback audioMaster)
-  : AudioEffectX (audioMaster, 1, 6)	// 1 program, 3 parameters only
+  : AudioEffectX (audioMaster, 1, 6)	// 1 program, 6 parameters only
 {
   numchans = 2;
   setNumInputs (numchans);		  // stereo in
@@ -29,18 +29,40 @@ Flanger::Flanger (audioMasterCallback audioMaster)
   setUniqueID ('Flanger');                // identify
   canProcessReplacing ();	          // supports replacing output
   // canDoubleReplacing ();	          // supports double precision processing
-  // float* delta = new float[numchans];
-  float delta[numchans];
-  
-  // gain = new float[numchans];
-  // fwdhop = new float[numchans];
-  // delaysize = new float[numchans];
-  // rate = new float[numchans];
-  // depth = new float[numchans];
-  // writepos = new int[numchans];
-  // readpos = new float[numchans];
-  // delayline = new float*[numchans];
-  
+  initFlanger();                          // init everything
+  vst_strncpy (programName, "Default", kVstMaxProgNameLen);	// default program name
+}
+
+//--------------------------------------------------------------------------------------------
+Flanger::~Flanger ()
+{
+  for(int i=0; i<numchans; i++) {
+    delete [] delayline[i];
+    delete [] gain;
+    delete [] fwdhop;
+    delete [] rate;
+    delete [] depth;
+    delete [] writepos;
+    delete [] readpos;
+  }
+  delete [] delayline;
+}
+
+void Flanger::initFlanger()
+{
+  float* delta = new float[numchans];  
+
+  // assign mem for everything
+  gain = new float[numchans];
+  fwdhop = new float[numchans];
+  delaysize = new float[numchans];
+  rate = new float[numchans];
+  depth = new float[numchans];
+  writepos = new int[numchans];
+  readpos = new float[numchans];
+  delayline = new float*[numchans];
+
+  // get initial values right
   for(int i=0; i<numchans; ++i) {
     delta[i] = (delaysize[i] * rate[i]) / sampleRate;
     gain[i] = 1.f;		  
@@ -56,24 +78,6 @@ Flanger::Flanger (audioMasterCallback audioMaster)
     memset(delayline[i], 0, delaysize[i] * sizeof(float));
   }
   delete [] delta;
-  
-  vst_strncpy (programName, "Default", kVstMaxProgNameLen);	// default program name
-}
-
-//--------------------------------------------------------------------------------------------
-Flanger::~Flanger ()
-{
-  // for(int i=0; i<numchans; i++) {
-  //   delete [] delayline[i];
-  //   delete [] gain;
-  //   delete [] fwdhop;
-  //   delete [] rate;
-  //   delete [] depth;
-  //   delete [] writepos;
-  //   delete [] readpos;
-  // }
-  
-  delete [] delayline;
 }
 
 //-------------------------------------------------------------------------------------------
