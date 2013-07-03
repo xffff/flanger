@@ -21,24 +21,28 @@ AudioEffect* createEffectInstance (audioMasterCallback audioMaster)
 
 //-------------------------------------------------------------------------------------------
 Flanger::Flanger (audioMasterCallback audioMaster)
-  : AudioEffectX (audioMaster, 1, 3)	// 1 program, 3 parameters only
+  : AudioEffectX (audioMaster, 1, 6)	// 1 program, 3 parameters only
 {
-  setNumInputs (2);		  // stereo in
-  setNumOutputs (2);		  // stereo out
+  numchans = 2;
+  setNumInputs (numchans);		  // stereo in
+  setNumOutputs (numchans);		  // stereo out
   setUniqueID ('Flanger');        // identify
   canProcessReplacing ();	  // supports replacing output
   canDoubleReplacing ();	  // supports double precision processing
-  gain = 1.f;			  // default to 0 dB
-  float delta = (delaysize * rate) / sampleRate;
-  fwdhop = delta + 1.0f;
-  delaysize = sampleRate * 0.02f;
-  rate = 1.0f;
-  depth = 0.75f;
-  writepos = 0;
-  readpos = 0;  
-  delayline = new float[(int)delaysize];
-  memset(delayline, 0, delaysize * sizeof(float));
+  float delta[2];
   
+  for(int i=0; i<numchans; ++i) {
+    delta[i] = (delaysize[i] * rate[i]) / sampleRate;
+    gain[i] = 1.f;		  // default to 0 dB
+    fwdhop[i] = delta[i] + 1.0f;
+    delaysize[i] = sampleRate * 0.02f;
+    rate[i] = 1.0f;
+    depth[i] = 0.75f;
+    writepos[i] = 0;
+    readpos[i] = 0;  
+    delayline[i] = new float[(int)delaysize];
+    memset(delayline[i], 0, delaysize[i] * sizeof(float));
+  }
   vst_strncpy (programName, "Default", kVstMaxProgNameLen);	// default program name
 }
 
@@ -65,13 +69,22 @@ void Flanger::setParameter (VstInt32 index, float value)
 {
   switch(index) {
   case 0:
-    gain = value;
+    gain[0] = value;
     break;
   case 1:
-    depth = value;
+    depth[0] = value;
     break;
   case 2:
-    rate = value;
+    rate[0] = value;
+    break;
+  case 3:
+    gain[1] = value;
+    break;
+  case 4:
+    depth[1] = value;
+    break;
+  case 5:
+    rate[1] = value;
     break;
   }
 }
@@ -81,14 +94,23 @@ float Flanger::getParameter (VstInt32 index)
 {
   switch(index) {
   case 0:
-    return gain;
+    return gain[0];
     break;
   case 1:
-    return depth;
+    return depth[0];
     break;
   case 2:
-    return rate;
+    return rate[0];
     break;
+  case 3:
+    return gain[1];
+    break;
+  case 4:
+    return depth[1];
+    break;
+  case 5:
+    return rate[1];
+    break;    
   }
 }
 
@@ -97,14 +119,23 @@ void Flanger::getParameterName (VstInt32 index, char* label)
 {
   switch(index) {
   case 0:
-    vst_strncpy (label, "Gain", kVstMaxParamStrLen);
+    vst_strncpy (label, "Gain1", kVstMaxParamStrLen);
     break;
   case 1:
-    vst_strncpy (label, "Depth", kVstMaxParamStrLen);
+    vst_strncpy (label, "Depth1", kVstMaxParamStrLen);
     break;
   case 2:
-    vst_strncpy (label, "Rate", kVstMaxParamStrLen);
+    vst_strncpy (label, "Rate1", kVstMaxParamStrLen);
     break;
+  case 3:
+    vst_strncpy (label, "Gain2", kVstMaxParamStrLen);
+    break;
+  case 4:
+    vst_strncpy (label, "Depth2", kVstMaxParamStrLen);
+    break;
+  case 5:
+    vst_strncpy (label, "Rate2", kVstMaxParamStrLen);
+    break;    
   }
 }
 
@@ -113,13 +144,22 @@ void Flanger::getParameterDisplay (VstInt32 index, char* text)
 {
   switch(index) {
   case 0:
-    dB2string (gain, text, kVstMaxParamStrLen);
+    dB2string (gain[0], text, kVstMaxParamStrLen);
     break;
   case 1:
-    float2string (depth, text, kVstMaxParamStrLen);
+    float2string (depth[0], text, kVstMaxParamStrLen);
     break;
   case 2:
-    float2string (rate, text, kVstMaxParamStrLen);
+    float2string (rate[0], text, kVstMaxParamStrLen);
+    break;
+  case 3:
+    dB2string (gain[1], text, kVstMaxParamStrLen);
+    break;
+  case 4:
+    float2string (depth[1], text, kVstMaxParamStrLen);
+    break;
+  case 5:
+    float2string (rate[1], text, kVstMaxParamStrLen);
     break;
   }
 }
@@ -137,27 +177,36 @@ void Flanger::getParameterLabel (VstInt32 index, char* label)
   case 2:
     vst_strncpy (label, "Hz", kVstMaxParamStrLen);
     break;
+  case 3:
+    vst_strncpy (label, "dB", kVstMaxParamStrLen);
+    break;
+  case 4:
+    vst_strncpy (label, " ", kVstMaxParamStrLen);
+    break;
+  case 5:
+    vst_strncpy (label, "Hz", kVstMaxParamStrLen);
+    break;
   }
 }
 
 //------------------------------------------------------------------------
 bool Flanger::getEffectName (char* name)
 {
-  vst_strncpy (name, "Gain", kVstMaxEffectNameLen);
+  vst_strncpy (name, "Flanger", kVstMaxEffectNameLen);
   return true;
 }
 
 //------------------------------------------------------------------------
 bool Flanger::getProductString (char* text)
 {
-  vst_strncpy (text, "Gain", kVstMaxProductStrLen);
+  vst_strncpy (text, "mFlange", kVstMaxProductStrLen);
   return true;
 }
 
 //------------------------------------------------------------------------
 bool Flanger::getVendorString (char* text)
 {
-  vst_strncpy (text, "Steinberg Media Technologies", kVstMaxVendorStrLen);
+  vst_strncpy (text, "xffff", kVstMaxVendorStrLen);
   return true;
 }
 
@@ -170,30 +219,31 @@ VstInt32 Flanger::getVendorVersion ()
 //-----------------------------------------------------------------------------------------
 void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames)
 {
-  float* in1  =  inputs[0];
-  float* in2  =  inputs[1];
-  float* out1 = outputs[0];
-  float* out2 = outputs[1];
-  float val, delayed;
-  fwdhop = ((delaysize*rate*2)/sampleRate) + 1.0f;
+  float val[2];
+  float delayed[2];
 
-  for(int i=0;i<sampleFrames;++i) {
-    val = in1[i] * gain;
+  for(int j=0; j<numchans; ++j)
+    { fwdhop[j] = ((delaysize[j]*rate[j]*2)/sampleRate) + 1.0f; }
 
+  for(int i=0; i<sampleFrames; ++i) {
+    for(int j=0; j<numchans; ++j) {
+    val[j] = inputs[j][i] * gain[j];    
+    
     // write to delay line
-    delayline[writepos++] = val;
-    if(writepos==delaysize) { writepos = 0; }
+    delayline[j][writepos[j]++] = val[j];
+    if(writepos[j]==delaysize[j]) { writepos[j] = 0; }
 
     // read from delay line
-    delayed = delayline[(int)readpos];
-    readpos += fwdhop;
+    delayed[j] = delayline[j][(int)readpos];
+    readpos[j] += fwdhop[j];
 
     // update pos, could be going forward or backward
-    while((int)readpos >= delaysize) { readpos -= delaysize; }
-    while((int)readpos < 0) { readpos += delaysize; }
+    while((int)readpos[j] >= delaysize[j]) { readpos[j] -= delaysize[j]; }
+    while((int)readpos[j] < 0) { readpos[j] += delaysize[j]; }
 
     // mix
-    out1[i] = val + (delayed * depth);
+    outputs[j][i] = val[j] + (delayed[j] * depth[j]);
+    }
   }
 }
 
@@ -204,7 +254,7 @@ void Flanger::processDoubleReplacing (double** inputs, double** outputs, VstInt3
   double* in2  =  inputs[1];
   double* out1 = outputs[0];
   double* out2 = outputs[1];
-  double dGain = gain;
+  double dGain = gain[0];
 
   for(int i=0;i<sampleFrames;++i) {
     out1[i] = in1[i] * dGain;

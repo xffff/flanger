@@ -43,14 +43,15 @@ public:
 	virtual VstInt32 getVendorVersion ();
 
 protected:
-	float rate;
-	float delaysize;
-	float fwdhop;
-	float readpos;
-	int writepos;
-	float *delayline;
-	float gain;
-	float depth;
+	int numchans;
+	float rate[];
+	float delaysize[];
+	float fwdhop[];
+	float readpos[];
+	int writepos[];
+	float **delayline;
+	float gain[];
+	float depth[];
 	char programName[kVstMaxProgNameLen + 1];
 };
 
