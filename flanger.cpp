@@ -241,8 +241,8 @@ VstInt32 Flanger::getVendorVersion ()
 //-----------------------------------------------------------------------------------------
 void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames)
 {
-  float val[2];
-  float delayed[2];
+  float* val = new float[2];
+  float* delayed = new float[2];
 
   for(int j=0; j<numchans; ++j)
     { fwdhop[j] = ((delaysize[j]*rate[j]*2)/sampleRate) + 1.0f; }
@@ -266,7 +266,9 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
     // mix
     outputs[j][i] = val[j] + (delayed[j] * depth[j]);
     }
-  }
+  }  
+  delete [] val;
+  delete [] delayed;  
 }
 
 //-----------------------------------------------------------------------------------------
