@@ -5,7 +5,8 @@
 // Category     : VST 2.x SDK Samples
 // Filename     : flanger.cpp
 // Created by   : Steinberg Media Technologies
-// Description  : Stereo plugin which applies Gain [-oo, 0dB]
+// Description  : Stereo plugin which applies flange, algorithm taken from Dan Stowell's
+//                example in the SuperCollider book. (ch25)
 //
 // © 2006, Steinberg Media Technologies, All Rights Reserved
 //-------------------------------------------------------------------------------------------
@@ -43,7 +44,7 @@ Flanger::Flanger (audioMasterCallback audioMaster)
 //--------------------------------------------------------------------------------------------
 Flanger::~Flanger ()
 {
-  // nothing to do here
+  delete [] delayline;
 }
 
 //-------------------------------------------------------------------------------------------
