@@ -20,7 +20,7 @@ AudioEffect* createEffectInstance (audioMasterCallback audioMaster)
 
 //-------------------------------------------------------------------------------------------
 Flanger::Flanger (audioMasterCallback audioMaster)
-  : AudioEffectX (audioMaster, 1, 2)	// 1 program, 2 parameters only
+  : AudioEffectX (audioMaster, 1, 3)	// 1 program, 2 parameters only
 {
   setNumInputs (2);		  // stereo in
   setNumOutputs (2);		  // stereo out
@@ -65,6 +65,12 @@ void Flanger::setParameter (VstInt32 index, float value)
   case 0:
     gain = value;
     break;
+  case 1:
+    depth = value;
+    break;
+  case 2:
+    rate = value;
+    break;
   }
 }
 
@@ -74,6 +80,12 @@ float Flanger::getParameter (VstInt32 index)
   switch(index) {
   case 0:
     return gain;
+    break;
+  case 1:
+    return depth;
+    break;
+  case 2:
+    return rate;
     break;
   }
 }
