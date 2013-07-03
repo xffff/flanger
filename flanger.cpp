@@ -63,15 +63,15 @@ Flanger::Flanger (audioMasterCallback audioMaster)
 //--------------------------------------------------------------------------------------------
 Flanger::~Flanger ()
 {
-  for(int i=0; i<numchans; i++) {
-    delete [] delayline[i];
-    delete [] gain;
-    delete [] fwdhop;
-    delete [] rate;
-    delete [] depth;
-    delete [] writepos;
-    delete [] readpos;
-  }
+  // for(int i=0; i<numchans; i++) {
+  //   delete [] delayline[i];
+  //   delete [] gain;
+  //   delete [] fwdhop;
+  //   delete [] rate;
+  //   delete [] depth;
+  //   delete [] writepos;
+  //   delete [] readpos;
+  // }
   
   delete [] delayline;
 }
