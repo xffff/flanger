@@ -44,14 +44,14 @@ public:
 
 protected:
 	int numchans;
-	float *delayline[];
-	float rate[];
-	float delaysize[];
-	float fwdhop[];
-	float readpos[];
-	int writepos[];
-	float gain[];
-	float depth[];
+	float *delayline[2];
+	float rate[2];
+	float delaysize[2];
+	float fwdhop[2];
+	float readpos[2];
+	int writepos[2];
+	float gain[2];
+	float depth[2];
 	char programName[kVstMaxProgNameLen + 1];
 };
 
