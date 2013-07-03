@@ -33,6 +33,7 @@ Flanger::Flanger (audioMasterCallback audioMaster)
   fwdhop = delta + 1.0f;
   delaysize = sampleRate * 0.02f;
   rate = 1.0f;
+  depth = 0.75f;
   writepos = 0;
   readpos = 0;  
   delayline = new float[(int)delaysize];
@@ -98,6 +99,12 @@ void Flanger::getParameterName (VstInt32 index, char* label)
   case 0:
     vst_strncpy (label, "Gain", kVstMaxParamStrLen);
     break;
+  case 1:
+    vst_strncpy (label, "Depth", kVstMaxParamStrLen);
+    break;
+  case 2:
+    vst_strncpy (label, "Rate", kVstMaxParamStrLen);
+    break;
   }
 }
 
@@ -108,6 +115,12 @@ void Flanger::getParameterDisplay (VstInt32 index, char* text)
   case 0:
     dB2string (gain, text, kVstMaxParamStrLen);
     break;
+  case 1:
+    float2string (gain, text, kVstMaxParamStrLen);
+    break;
+  case 2:
+    float2string (gain, text, kVstMaxParamStrLen);
+    break;
   }
 }
 
@@ -117,6 +130,12 @@ void Flanger::getParameterLabel (VstInt32 index, char* label)
   switch(index) {
   case 0:
     vst_strncpy (label, "dB", kVstMaxParamStrLen);
+    break;
+  case 1:
+    vst_strncpy (label, "f", kVstMaxParamStrLen);
+    break;
+  case 2:
+    vst_strncpy (label, "Hz", kVstMaxParamStrLen);
     break;
   }
 }
