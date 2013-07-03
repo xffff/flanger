@@ -29,21 +29,23 @@ Flanger::Flanger (audioMasterCallback audioMaster)
   setUniqueID ('Flanger');                // identify
   canProcessReplacing ();	          // supports replacing output
   // canDoubleReplacing ();	          // supports double precision processing
-  float* delta = new float[numchans];
-  gain = new float[numchans];
-  fwdhop = new float[numchans];
-  delaysize = new float[numchans];
-  rate = new float[numchans];
-  depth = new float[numchans];
-  writepos = new int[numchans];
-  readpos = new float[numchans];
-  delayline = new float*[numchans];
+  // float* delta = new float[numchans];
+  float delta[numchans];
+  
+  // gain = new float[numchans];
+  // fwdhop = new float[numchans];
+  // delaysize = new float[numchans];
+  // rate = new float[numchans];
+  // depth = new float[numchans];
+  // writepos = new int[numchans];
+  // readpos = new float[numchans];
+  // delayline = new float*[numchans];
   
   for(int i=0; i<numchans; ++i) {
     delta[i] = (delaysize[i] * rate[i]) / sampleRate;
     gain[i] = 1.f;		  
     fwdhop[i] = delta[i] + 1.0f;
-    delaysize[i] = sampleRate * 0.02f;
+    delaysize[i] = sampleRate * 0.02f; // fixed delay
     rate[i] = 1.0f;
     depth[i] = 0.75f;
     writepos[i] = 0;
