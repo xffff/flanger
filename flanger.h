@@ -50,7 +50,7 @@ protected:
 	int writepos;
 	float *delayline;
 	float gain;
-	
+	float depth;
 	char programName[kVstMaxProgNameLen + 1];
 };
 

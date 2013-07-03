@@ -152,7 +152,7 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
     delayed = delayline[(int)readpos];
     readpos += fwdhop;
     while((int)readpos >= delaysize) { readpos -= delaysize; }
-    while((int)readpos += delaysize) { readpos += delaysize; }
+    while((int)readpos < 0) { readpos += delaysize; }
     out1[i] = val + (delayed * depth);
   }
 }
