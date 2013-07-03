@@ -26,9 +26,9 @@ Flanger::Flanger (audioMasterCallback audioMaster)
   numchans = 2;
   setNumInputs (numchans);		  // stereo in
   setNumOutputs (numchans);		  // stereo out
-  setUniqueID ('Flanger');        // identify
-  canProcessReplacing ();	  // supports replacing output
-  // canDoubleReplacing ();	  // supports double precision processing
+  setUniqueID ('Flanger');                // identify
+  canProcessReplacing ();	          // supports replacing output
+  // canDoubleReplacing ();	          // supports double precision processing
   float* delta = new float[numchans];
   gain = new float[numchans];
   fwdhop = new float[numchans];
@@ -41,7 +41,7 @@ Flanger::Flanger (audioMasterCallback audioMaster)
   
   for(int i=0; i<numchans; ++i) {
     delta[i] = (delaysize[i] * rate[i]) / sampleRate;
-    gain[i] = 1.f;		  // default to 0 dB
+    gain[i] = 1.f;		  
     fwdhop[i] = delta[i] + 1.0f;
     delaysize[i] = sampleRate * 0.02f;
     rate[i] = 1.0f;
@@ -241,22 +241,20 @@ VstInt32 Flanger::getVendorVersion ()
 //-----------------------------------------------------------------------------------------
 void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames)
 {
-  float* val = new float[numchans];
-  float* delayed = new float[numchans];
-
-  for(int j=0; j<numchans; ++j)
-    { fwdhop[j] = ((delaysize[j]*rate[j]*2)/sampleRate) + 1.0f; }
-  
   for(int j=0; j<numchans; ++j) {
+    float val, delayed;
+    fwdhop[j] = ((delaysize[j]*rate[j]*2)/sampleRate) + 1.0f;
+    
     for(int i=0; i<sampleFrames; ++i) {
-      val[j] = inputs[j][i] * gain[j];    
+      // read in sample val and deal with gain
+      val = inputs[j][i] * gain[j];    
     
       // write to delay line
-      delayline[j][writepos[j]++] = val[j];
+      delayline[j][writepos[j]++] = val;
       if(writepos[j]==delaysize[j]) { writepos[j] = 0; }
 
       // read from delay line
-      delayed[j] = delayline[j][(int)readpos];
+      delayed = delayline[j][(int)readpos];
       readpos[j] += fwdhop[j];
 
       // update pos, could be going forward or backward
@@ -264,13 +262,9 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
       while((int)readpos[j] < 0) { readpos[j] += delaysize[j]; }
 
       // mix
-      outputs[j][i] = val[j] + (delayed[j] * depth[j]);
+      outputs[j][i] = val + (delayed * depth[j]);
     }
-  }
-
-  // clean up
-  delete [] val;
-  delete [] delayed;  
+  } 
 }
 
 //-----------------------------------------------------------------------------------------
