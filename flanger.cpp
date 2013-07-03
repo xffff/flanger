@@ -116,10 +116,10 @@ void Flanger::getParameterDisplay (VstInt32 index, char* text)
     dB2string (gain, text, kVstMaxParamStrLen);
     break;
   case 1:
-    float2string (gain, text, kVstMaxParamStrLen);
+    float2string (depth, text, kVstMaxParamStrLen);
     break;
   case 2:
-    float2string (gain, text, kVstMaxParamStrLen);
+    float2string (rate, text, kVstMaxParamStrLen);
     break;
   }
 }
@@ -132,7 +132,7 @@ void Flanger::getParameterLabel (VstInt32 index, char* label)
     vst_strncpy (label, "dB", kVstMaxParamStrLen);
     break;
   case 1:
-    vst_strncpy (label, "f", kVstMaxParamStrLen);
+    vst_strncpy (label, " ", kVstMaxParamStrLen);
     break;
   case 2:
     vst_strncpy (label, "Hz", kVstMaxParamStrLen);
