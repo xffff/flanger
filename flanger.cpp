@@ -20,14 +20,23 @@ AudioEffect* createEffectInstance (audioMasterCallback audioMaster)
 
 //-------------------------------------------------------------------------------------------
 Flanger::Flanger (audioMasterCallback audioMaster)
-  : AudioEffectX (audioMaster, 1, 1)	// 1 program, 1 parameter only
+  : AudioEffectX (audioMaster, 1, 2)	// 1 program, 2 parameters only
 {
-  setNumInputs (2);		// stereo in
-  setNumOutputs (2);		// stereo out
-  setUniqueID ('Flanger');      // identify
-  canProcessReplacing ();	// supports replacing output
-  canDoubleReplacing ();	// supports double precision processing
-  gain = 1.f;			// default to 0 dB
+  setNumInputs (2);		  // stereo in
+  setNumOutputs (2);		  // stereo out
+  setUniqueID ('Flanger');        // identify
+  canProcessReplacing ();	  // supports replacing output
+  canDoubleReplacing ();	  // supports double precision processing
+  gain = 1.f;			  // default to 0 dB
+  float delta = (delaysize * rate) / sampleRate;
+  fwdhop = delta + 1.0f;
+  delaysize = sampleRate * 0.02f;
+  rate = 1.0f;
+  writepos = 0;
+  readpos = 0;  
+  delayline = new float[(int)delaysize];
+  memset(delayline, 0, delaysize * sizeof(float));
+  
   vst_strncpy (programName, "Default", kVstMaxProgNameLen);	// default program name
 }
 
@@ -133,10 +142,18 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
   float* in2  =  inputs[1];
   float* out1 = outputs[0];
   float* out2 = outputs[1];
+  float val, delayed;
+  fwdhop = ((delaysize*rate*2)/sampleRate) + 1.0f;
 
   for(int i=0;i<sampleFrames;++i) {
-    out1[i] = in1[i] * gain;
-    out2[i] = in2[i] * gain;
+    val = in1[i] * gain;
+    delayline[writepos++] = val;
+    if(writepos==delaysize) { writepos = 0; }
+    delayed = delayline[(int)readpos];
+    readpos += fwdhop;
+    while((int)readpos >= delaysize) { readpos -= delaysize; }
+    while((int)readpos += delaysize) { readpos += delaysize; }
+    out1[i] = val + (delayed * depth);
   }
 }
 
