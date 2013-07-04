@@ -73,9 +73,7 @@ void Flanger::initFlanger()
     writepos[i] = 0;
     readpos[i] = 0;  
     delayline[i] = new float[(int)delaysize];
-
-    // start with 0s
-    memset(delayline[i], 0, delaysize[i] * sizeof(float));
+    for(int j=0; j<(int)delaysize; ++j) { delayline[i][j] = 0; }
   }
   delete [] delta;
 }
