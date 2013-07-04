@@ -261,7 +261,7 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
   for(int i=0; i<sampleFrames; i++) {
     val = inputs[0][i];
     
-    // write to delay ine
+    // write to delay line
     // stdelayline[0][writepos[0]++] = val;
     delayline[writepos[0]++] = val;
     if(writepos[0]==delaysize[0]) { writepos[0] = 0; }
