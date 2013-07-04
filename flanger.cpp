@@ -25,7 +25,7 @@ Flanger::Flanger (audioMasterCallback audioMaster)
 {
   setNumInputs (NUMCHANS);		  // stereo in
   setNumOutputs (NUMCHANS);		  // stereo out
-  setUniqueID ('Flanger');        // identify
+  setUniqueID ('Flange');        // identify
   canProcessReplacing ();	  // supports replacing output
   //  canDoubleReplacing ();	  // supports double precision processing
   initVST();
@@ -39,8 +39,8 @@ Flanger::~Flanger ()
   // for(int i=0; i<numchans; i++)
   //    { delete [] stdelayline[i]; }
   // delete [] stdelayline;
-
-  delete [] delayline;
+  for(int i=0; i<NUMCHANS; i++)
+    { delete [] delayline[i]; }
   delete [] gain;
   delete [] rate;
   delete [] depth;
@@ -247,13 +247,11 @@ VstInt32 Flanger::getVendorVersion ()
 
 void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames)
 {
-  float val, delayed;
+  for(int n=0; n<NUMCHANS; n++) {
+    float val, delayed;
+    fwdhop[n] = ((delaysize[n]*rate[n]*2)/sampleRate) + 1.0f; 
 
-  for(int n=0; n<NUMCHANS; n++)
-    { fwdhop[n] = ((delaysize[n]*rate[n]*2)/sampleRate) + 1.0f; }
-  
-  for(int i=0; i<sampleFrames; i++) {
-    for(int n=0; n<NUMCHANS; n++) {
+    for(int i=0; i<sampleFrames; i++) {
       // in
       val = inputs[n][i];
     
