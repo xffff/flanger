@@ -85,9 +85,9 @@ void Flanger::setParameter (VstInt32 index, float value)
   case 2:
     rate = value;
     break;
-  // case 3:
-  //   rgain = value;
-  //   break;
+   case 3:
+     gain[1] = value;
+     break;
   // case 4:
   //   rdepth = value;
   //   break;
@@ -110,9 +110,9 @@ float Flanger::getParameter (VstInt32 index)
   case 2:
     return rate;
     break;
-  // case 3:
-  //   return rgain;
-  //   break;
+  case 3:
+     return gain[1];
+     break;
   // case 4:
   //   return rdepth;
   //   break;
@@ -135,9 +135,9 @@ void Flanger::getParameterName (VstInt32 index, char* label)
   case 2:
     vst_strncpy (label, "Rate", kVstMaxParamStrLen);
     break;
-  // case 3:
-  //   vst_strncpy (label, "Gain", kVstMaxParamStrLen);
-  //   break;
+  case 3:
+    vst_strncpy (label, "Gain", kVstMaxParamStrLen);
+    break;
   // case 4:
   //   vst_strncpy (label, "Depth", kVstMaxParamStrLen);
   //   break;
@@ -160,9 +160,9 @@ void Flanger::getParameterDisplay (VstInt32 index, char* text)
   case 2:
     float2string (rate, text, kVstMaxParamStrLen);    
     break;
-  // case 3:
-  //   dB2string (rgain, text, kVstMaxParamStrLen);
-  //   break;
+  case 3:
+    dB2string (gain[1], text, kVstMaxParamStrLen);
+    break;
   // case 4:
   //   float2string (rdepth, text, kVstMaxParamStrLen);
   //   break;
@@ -185,9 +185,9 @@ void Flanger::getParameterLabel (VstInt32 index, char* label)
   case 2:
     vst_strncpy (label, "Hz", kVstMaxParamStrLen);
     break;
-  // case 3:
-  //   vst_strncpy (label, "dB", kVstMaxParamStrLen);
-  //   break;
+  case 3:
+    vst_strncpy (label, "dB", kVstMaxParamStrLen);
+    break;
   // case 4:
   //   vst_strncpy (label, " ", kVstMaxParamStrLen);
   //   break;
@@ -231,12 +231,12 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
   float* in1 = inputs[0];
   float* out1 = outputs[0];
   // float* in2 = inputs[1];
-  // float* out2 = outputs[1];
+  float* out2 = outputs[1];
   float val, delayed;
   fwdhop = ((delaysize*rate*2)/sampleRate) + 1.0f;
   
   for(int i=0;i<sampleFrames;++i) {
-    val = in1[i] * gain[0];
+    val = in1[i];
     
     // write to delay ine
     delayline[writepos++] = val;
@@ -251,7 +251,8 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
     while((int)readpos < 0) { readpos += delaysize; }
 
     // mix
-    out1[i] = val + (delayed * depth);
+    out1[i] = val + (delayed * depth) * gain[0];
+    out2[i] = val + (delayed * depth) * gain[1];
   }
 }
 
