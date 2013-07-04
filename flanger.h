@@ -24,7 +24,7 @@ public:
 
 	// Processing
 	virtual void processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames);
-	//	virtual void processDoubleReplacing (double** inputs, double** outputs, VstInt32 sampleFrames);
+	// virtual void processDoubleReplacing (double** inputs, double** outputs, VstInt32 sampleFrames);
 
 	// Program
 	virtual void setProgramName (char* name);
@@ -43,12 +43,13 @@ public:
 	virtual VstInt32 getVendorVersion ();
 
 protected:
+	void initVST();
+	float *delayline;
 	float rate;
 	float delaysize;
 	float fwdhop;
 	float readpos;
 	int writepos;
-	float *delayline;
 	float gain;
 	float depth;
 	char programName[kVstMaxProgNameLen + 1];
