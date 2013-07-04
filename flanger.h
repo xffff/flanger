@@ -2,12 +2,10 @@
 // VST Plug-Ins SDK
 // Version 2.4		$Date: 2006/11/13 09:08:27 $
 //
-// Category     : VST 2.x SDK Samples
 // Filename     : flanger.h
-// Created by   : Steinberg Media Technologies
-// Description  : Stereo plugin which applies Gain [-oo, 0dB]
+// Created by   : Michael Murphy
+// Description  : Stereo Flanger
 //
-// © 2006, Steinberg Media Technologies, All Rights Reserved
 //---------------------------------------------------------------------------------------------
 
 #ifndef __again__
@@ -45,7 +43,6 @@ public:
 
 protected:
 	void initVST();	
-	float **stdelayline;
 	float *delayline[NUMCHANS];
 	float rate[NUMCHANS];
 	float delaysize[NUMCHANS];

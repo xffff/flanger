@@ -2,13 +2,11 @@
 // VST Plug-Ins SDK
 // Version 2.4		$Date: 2006/11/13 09:08:27 $
 //
-// Category     : VST 2.x SDK Samples
 // Filename     : flanger.cpp
 // Created by   : Steinberg Media Technologies
 // Description  : Stereo plugin which applies flange, algorithm taken from Dan Stowell's
 //                example in the SuperCollider book. (ch25)
 //
-// © 2006, Steinberg Media Technologies, All Rights Reserved
 //-------------------------------------------------------------------------------------------
 
 #include "flanger.h"
@@ -36,33 +34,15 @@ Flanger::Flanger (audioMasterCallback audioMaster)
 //--------------------------------------------------------------------------------------------
 Flanger::~Flanger ()
 {
-  // for(int i=0; i<numchans; i++)
-  //    { delete [] stdelayline[i]; }
-  // delete [] stdelayline;
   for(int i=0; i<NUMCHANS; i++)
     { delete [] delayline[i]; }
-  // delete [] gain;
-  // delete [] rate;
-  // delete [] depth;
-  // delete [] fwdhop;
-  // delete [] writepos;
-  // delete [] readpos;
 }
 
 //--------------------------------------------------------------------------------------------
 
 void Flanger::initVST()
 {
-  float delta[2];
-
-  // gain = new float[NUMCHANS];
-  // rate = new float[NUMCHANS];
-  // depth = new float[NUMCHANS];
-  // delta = new float[NUMCHANS];
-  // fwdhop = new float[NUMCHANS];
-  // writepos = new int[NUMCHANS];
-  // readpos = new float[NUMCHANS];
-  // stdelayline = new float*[NUMCHANS];  
+  float delta[NUMCHANS];
   
   for(int i=0; i<NUMCHANS; i++) {
     gain[i] = 1.f;
@@ -76,7 +56,6 @@ void Flanger::initVST()
     delayline[i] = new float[(int)delaysize[i]];
     memset(delayline[i], 0, delaysize[i]*sizeof(float));
   }
-  // delete [] delta;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -219,21 +198,21 @@ void Flanger::getParameterLabel (VstInt32 index, char* label)
 //------------------------------------------------------------------------
 bool Flanger::getEffectName (char* name)
 {
-  vst_strncpy (name, "Gain", kVstMaxEffectNameLen);
+  vst_strncpy (name, "Flange", kVstMaxEffectNameLen);
   return true;
 }
 
 //------------------------------------------------------------------------
 bool Flanger::getProductString (char* text)
 {
-  vst_strncpy (text, "Gain", kVstMaxProductStrLen);
+  vst_strncpy (text, "xFlange", kVstMaxProductStrLen);
   return true;
 }
 
 //------------------------------------------------------------------------
 bool Flanger::getVendorString (char* text)
 {
-  vst_strncpy (text, "Steinberg Media Technologies", kVstMaxVendorStrLen);
+  vst_strncpy (text, "MM 2013", kVstMaxVendorStrLen);
   return true;
 }
 
@@ -250,47 +229,32 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
 
   float val[2];
   float delayed[2];
-  fwdhop[0] = ((delaysize[0]*rate[0]*2)/sampleRate) + 1.0f;
-  fwdhop[1] = ((delaysize[1]*rate[1]*2)/sampleRate) + 1.0f;
-
+  
+  for(int n=0; n<NUMCHANS; n++)
+    { fwdhop[n] = ((delaysize[n]*rate[n]*2)/sampleRate) + 1.0f; }
+  
   for(int i=0; i<sampleFrames; i++) {
-    // in L
-    val[0] = inputs[0][i];
+    for(int n=0; n<NUMCHANS; n++) {
+      // in L
+      val[n] = inputs[n][i];
     
-    // write to delay ine
-    // stdelayline[0][writepos[0]++] = val;
-    delayline[0][writepos[0]++] = val[0];
-    if(writepos[0]==delaysize[0]) { writepos[0] = 0; }
+      // write to delay ine
+      // stdelayline[n][writepos[n]++] = val;
+      delayline[n][writepos[n]++] = val[n];
+      if(writepos[n]==delaysize[n]) { writepos[n] = 0; }
 
-    // read from delay ine
-    // delayed = stdelayline[0][(int)readpos[0]];
-    delayed[0] = delayline[0][(int)readpos[0]];
-    readpos[0] += fwdhop[0];
+      // read from delay ine
+      // delayed = stdelayline[n][(int)readpos[n]];
+      delayed[n] = delayline[n][(int)readpos[n]];
+      readpos[n] += fwdhop[n];
 
-    // update pos, could be going forward or backward
-    while((int)readpos[0] >= delaysize[0]) { readpos[0] -= delaysize[0]; }
-    while((int)readpos[0] < 0) { readpos[0] += delaysize[0]; }
-
-    // in R
-    val[1] = inputs[1][i];
+      // update pos, could be going forward or backward
+      while((int)readpos[n] >= delaysize[n]) { readpos[n] -= delaysize[n]; }
+      while((int)readpos[n] < 0) { readpos[n] += delaysize[n]; }
     
-    // write to delay ine
-    // stdelayline[1][writepos[1]++] = val;
-    delayline[1][writepos[1]++] = val[1];
-    if(writepos[1]==delaysize[1]) { writepos[1] = 0; }
-
-    // read from delay ine
-    // delayed = stdelayline[1][(int)readpos[1]];
-    delayed[1] = delayline[1][(int)readpos[1]];
-    readpos[1] += fwdhop[1];
-
-    // update pos, could be going forward or backward
-    while((int)readpos[1] >= delaysize[1]) { readpos[1] -= delaysize[1]; }
-    while((int)readpos[1] < 0) { readpos[1] += delaysize[1]; }
-      
-    // mix
-    outputs[0][i] = (val[0] + (delayed[0] * depth[0])) * gain[0];
-    outputs[1][i] = (val[1] + (delayed[1] * depth[1])) * gain[1];
+      // mix
+      outputs[n][i] = (val[n] + (delayed[n] * depth[n])) * gain[n];
+    }
   }
 }
 
