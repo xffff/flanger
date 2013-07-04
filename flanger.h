@@ -12,6 +12,7 @@
 
 #ifndef __again__
 #define __again__
+#define NUMCHANS 2
 
 #include "public.sdk/source/vst2.x/audioeffectx.h"
 
@@ -43,13 +44,11 @@ public:
 	virtual VstInt32 getVendorVersion ();
 
 protected:
-	void initVST();
-	int numchans;	
+	void initVST();	
 	float **stdelayline;
-	float *delayline;
+	float *delayline[NUMCHANS];
 	float *rate;
 	float *delaysize;
-	float totaldelaysize;
 	float *fwdhop;
 	float *readpos;
 	int *writepos;

@@ -23,9 +23,8 @@ AudioEffect* createEffectInstance (audioMasterCallback audioMaster)
 Flanger::Flanger (audioMasterCallback audioMaster)
   : AudioEffectX (audioMaster, 1, 6)	// 1 program, 3 parameters only
 {
-  numchans = 2;
-  setNumInputs (2);		  // stereo in
-  setNumOutputs (2);		  // stereo out
+  setNumInputs (NUMCHANS);		  // stereo in
+  setNumOutputs (NUMCHANS);		  // stereo out
   setUniqueID ('Flanger');        // identify
   canProcessReplacing ();	  // supports replacing output
   //  canDoubleReplacing ();	  // supports double precision processing
@@ -55,17 +54,17 @@ Flanger::~Flanger ()
 void Flanger::initVST()
 {
   float *delta;
-  totaldelaysize = 0;
-  gain = new float[numchans];
-  rate = new float[numchans];
-  depth = new float[numchans];
-  delta = new float[numchans];
-  fwdhop = new float[numchans];
-  writepos = new int[numchans];
-  readpos = new float[numchans];
-  // stdelayline = new float*[numchans];  
+
+  gain = new float[NUMCHANS];
+  rate = new float[NUMCHANS];
+  depth = new float[NUMCHANS];
+  delta = new float[NUMCHANS];
+  fwdhop = new float[NUMCHANS];
+  writepos = new int[NUMCHANS];
+  readpos = new float[NUMCHANS];
+  // stdelayline = new float*[NUMCHANS];  
   
-  for(int i=0; i<numchans; i++) {
+  for(int i=0; i<NUMCHANS; i++) {
     gain[i] = 1.f;
     rate[i] = 1.0f;
     depth[i] = 0.75f;
@@ -74,18 +73,9 @@ void Flanger::initVST()
     fwdhop[i] = delta[i] + 1.0f;
     writepos[i] = 0;
     readpos[i] = 0;
-    
-    // stdelayline[i] = new float[(int)delaysize[i]];
-    // for(int j=0; j<(int)delaysize[j]; j++)
-    //   { stdelayline[i][j] = 0; }
-
-    totaldelaysize+=delaysize[i];
+    delayline[i] = new float[(int)delaysize[i]];
+    memset(delayline[i], 0, delaysize[i]*sizeof(float));
   }
-
-  delayline = new float[(int)totaldelaysize];
-  for(int j=0; j<(int)totaldelaysize; j++)
-    { delayline[j] = 0; }
-  
   delete [] delta;
 }
 
@@ -258,28 +248,32 @@ VstInt32 Flanger::getVendorVersion ()
 void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames)
 {
   float val, delayed;
-  fwdhop[0] = ((delaysize[0]*rate[0]*2)/sampleRate) + 1.0f;
+
+  for(int n=0; n<NUMCHANS; n++)
+    { fwdhop[n] = ((delaysize[n]*rate[n]*2)/sampleRate) + 1.0f; }
   
   for(int i=0; i<sampleFrames; i++) {
-    val = inputs[0][i];
+    for(int n=0; n<NUMCHANS; n++) {
+      // in
+      val = inputs[n][i];
     
-    // write to delay line
-    // stdelayline[0][writepos[0]++] = val;
-    delayline[writepos[0]++] = val;
-    if(writepos[0]==delaysize[0]) { writepos[0] = 0; }
+      // write to delay ine
+      // stdelayline[n][writepos[n]++] = val;
+      delayline[n][writepos[n]++] = val;
+      if(writepos[n]==delaysize[n]) { writepos[n] = 0; }
 
-    // read from delay ine
-    // delayed = stdelayline[0][(int)readpos[0]];
-    delayed = delayline[(int)readpos[0]];
-    readpos[0] += fwdhop[0];
+      // read from delay ine
+      // delayed = stdelayline[n][(int)readpos[n]];
+      delayed = delayline[n][(int)readpos[n]];
+      readpos[n] += fwdhop[n];
 
-    // update pos, could be going forward or backward
-    while((int)readpos[0] >= delaysize[0]) { readpos[0] -= delaysize[0]; }
-    while((int)readpos[0] < 0) { readpos[0] += delaysize[0]; }
+      // update pos, could be going forward or backward
+      while((int)readpos[n] >= delaysize[n]) { readpos[n] -= delaysize[n]; }
+      while((int)readpos[n] < 0) { readpos[n] += delaysize[n]; }
 
-    // mix
-    outputs[0][i] = (val + (delayed * depth[0])) * gain[0];
-    outputs[1][i] = (val + (delayed * depth[1])) * gain[1];
+      // mix
+      outputs[n][i] = (val + (delayed * depth[n])) * gain[n];
+    }
   }
 }
 
