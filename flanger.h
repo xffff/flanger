@@ -27,8 +27,8 @@ public:
 
 	// Program
 	virtual void setProgramName (char* name);
-	virtual void getProgramName (char* name);
-
+	virtual void getProgramName (char* name);	
+	
 	// Parameters
 	virtual void setParameter (VstInt32 index, float value);
 	virtual float getParameter (VstInt32 index);
@@ -42,6 +42,7 @@ public:
 	virtual VstInt32 getVendorVersion ();
 
 protected:
+<<<<<<< HEAD
 	void initVST();	
 	float *delayline[NUMCHANS];
 	float rate[NUMCHANS];
@@ -51,6 +52,19 @@ protected:
 	int writepos[NUMCHANS];
 	float gain[NUMCHANS];
 	float depth[NUMCHANS];
+=======
+	void initFlanger();
+	
+	int numchans;
+	float **delayline;
+	float *rate;
+	float *delaysize;
+	float *fwdhop;
+	float *readpos;
+	int *writepos;
+	float *gain;
+	float *depth;
+>>>>>>> 94c5c9a65c703a1cbd5fd6741885582eb8627905
 	char programName[kVstMaxProgNameLen + 1];
 };
 
