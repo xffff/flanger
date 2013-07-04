@@ -41,27 +41,27 @@ Flanger::~Flanger ()
   // delete [] stdelayline;
   for(int i=0; i<NUMCHANS; i++)
     { delete [] delayline[i]; }
-  delete [] gain;
-  delete [] rate;
-  delete [] depth;
-  delete [] fwdhop;
-  delete [] writepos;
-  delete [] readpos;
+  // delete [] gain;
+  // delete [] rate;
+  // delete [] depth;
+  // delete [] fwdhop;
+  // delete [] writepos;
+  // delete [] readpos;
 }
 
 //--------------------------------------------------------------------------------------------
 
 void Flanger::initVST()
 {
-  float *delta;
+  float delta[2];
 
-  gain = new float[NUMCHANS];
-  rate = new float[NUMCHANS];
-  depth = new float[NUMCHANS];
-  delta = new float[NUMCHANS];
-  fwdhop = new float[NUMCHANS];
-  writepos = new int[NUMCHANS];
-  readpos = new float[NUMCHANS];
+  // gain = new float[NUMCHANS];
+  // rate = new float[NUMCHANS];
+  // depth = new float[NUMCHANS];
+  // delta = new float[NUMCHANS];
+  // fwdhop = new float[NUMCHANS];
+  // writepos = new int[NUMCHANS];
+  // readpos = new float[NUMCHANS];
   // stdelayline = new float*[NUMCHANS];  
   
   for(int i=0; i<NUMCHANS; i++) {
@@ -76,7 +76,7 @@ void Flanger::initVST()
     delayline[i] = new float[(int)delaysize[i]];
     memset(delayline[i], 0, delaysize[i]*sizeof(float));
   }
-  delete [] delta;
+  // delete [] delta;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -246,34 +246,51 @@ VstInt32 Flanger::getVendorVersion ()
 //-----------------------------------------------------------------------------------------
 
 void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames)
-{
-  for(int n=0; n<NUMCHANS; n++)
-    { fwdhop[n] = ((delaysize[n]*rate[n]*2)/sampleRate) + 1.0f; }
-  
-  for(int n=0; n<NUMCHANS; n++) {
-    float val, delayed;
+{    
+
+  float val[2];
+  float delayed[2];
+  fwdhop[0] = ((delaysize[0]*rate[0]*2)/sampleRate) + 1.0f;
+  fwdhop[1] = ((delaysize[1]*rate[1]*2)/sampleRate) + 1.0f;
+
+  for(int i=0; i<sampleFrames; i++) {
+    // in L
+    val[0] = inputs[0][i];
     
-    for(int i=0; i<sampleFrames; i++) {
-      // in
-      val = inputs[n][i];
+    // write to delay ine
+    // stdelayline[0][writepos[0]++] = val;
+    delayline[0][writepos[0]++] = val[0];
+    if(writepos[0]==delaysize[0]) { writepos[0] = 0; }
+
+    // read from delay ine
+    // delayed = stdelayline[0][(int)readpos[0]];
+    delayed[0] = delayline[0][(int)readpos[0]];
+    readpos[0] += fwdhop[0];
+
+    // update pos, could be going forward or backward
+    while((int)readpos[0] >= delaysize[0]) { readpos[0] -= delaysize[0]; }
+    while((int)readpos[0] < 0) { readpos[0] += delaysize[0]; }
+
+    // in R
+    val[1] = inputs[1][i];
     
-      // write to delay ine
-      // stdelayline[n][writepos[n]++] = val;
-      delayline[n][writepos[n]++] = val;
-      if(writepos[n]==delaysize[n]) { writepos[n] = 0; }
+    // write to delay ine
+    // stdelayline[1][writepos[1]++] = val;
+    delayline[1][writepos[1]++] = val[1];
+    if(writepos[1]==delaysize[1]) { writepos[1] = 0; }
 
-      // read from delay ine
-      // delayed = stdelayline[n][(int)readpos[n]];
-      delayed = delayline[n][(int)readpos[n]];
-      readpos[n] += fwdhop[n];
+    // read from delay ine
+    // delayed = stdelayline[1][(int)readpos[1]];
+    delayed[1] = delayline[1][(int)readpos[1]];
+    readpos[1] += fwdhop[1];
 
-      // update pos, could be going forward or backward
-      while((int)readpos[n] >= delaysize[n]) { readpos[n] -= delaysize[n]; }
-      while((int)readpos[n] < 0) { readpos[n] += delaysize[n]; }
-
-      // mix
-      outputs[n][i] = (val + (delayed * depth[n])) * gain[n];
-    }
+    // update pos, could be going forward or backward
+    while((int)readpos[1] >= delaysize[1]) { readpos[1] -= delaysize[1]; }
+    while((int)readpos[1] < 0) { readpos[1] += delaysize[1]; }
+      
+    // mix
+    outputs[0][i] = (val[0] + (delayed[0] * depth[0])) * gain[0];
+    outputs[1][i] = (val[1] + (delayed[1] * depth[1])) * gain[1];
   }
 }
 
