@@ -37,9 +37,9 @@ Flanger::Flanger (audioMasterCallback audioMaster)
 //--------------------------------------------------------------------------------------------
 Flanger::~Flanger ()
 {
-  for(int i=0; i<numchans; i++)
-     { delete [] stdelayline[i]; }
-  delete [] stdelayline;
+  // for(int i=0; i<numchans; i++)
+  //    { delete [] stdelayline[i]; }
+  // delete [] stdelayline;
 
   delete [] delayline;
   delete [] gain;
@@ -55,7 +55,7 @@ Flanger::~Flanger ()
 void Flanger::initVST()
 {
   float *delta;
-  
+  totaldelaysize = 0;
   gain = new float[numchans];
   rate = new float[numchans];
   depth = new float[numchans];
@@ -63,7 +63,7 @@ void Flanger::initVST()
   fwdhop = new float[numchans];
   writepos = new int[numchans];
   readpos = new float[numchans];
-  stdelayline = new float*[numchans];  
+  // stdelayline = new float*[numchans];  
   
   for(int i=0; i<numchans; i++) {
     gain[i] = 1.f;
@@ -75,13 +75,15 @@ void Flanger::initVST()
     writepos[i] = 0;
     readpos[i] = 0;
     
-    stdelayline[i] = new float[(int)delaysize[i]];
-    for(int j=0; j<(int)delaysize[j]; j++)
-      { stdelayline[i][j] = 0; }
+    // stdelayline[i] = new float[(int)delaysize[i]];
+    // for(int j=0; j<(int)delaysize[j]; j++)
+    //   { stdelayline[i][j] = 0; }
+
+    totaldelaysize+=delaysize[i];
   }
 
-  delayline = new float[(int)delaysize[0]];
-  for(int j=0; j<(int)delaysize[0]; j++)
+  delayline = new float[(int)totaldelaysize];
+  for(int j=0; j<(int)totaldelaysize; j++)
     { delayline[j] = 0; }
   
   delete [] delta;

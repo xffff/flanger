@@ -49,6 +49,7 @@ protected:
 	float *delayline;
 	float *rate;
 	float *delaysize;
+	float totaldelaysize;
 	float *fwdhop;
 	float *readpos;
 	int *writepos;
