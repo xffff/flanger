@@ -227,24 +227,21 @@ VstInt32 Flanger::getVendorVersion ()
 void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames)
 {    
 
-  float val[2];
-  float delayed[2];
+  float val[NUMCHANS];
+  float delayed[NUMCHANS];
   
   for(int n=0; n<NUMCHANS; n++)
     { fwdhop[n] = ((delaysize[n]*rate[n]*2)/sampleRate) + 1.0f; }
   
   for(int i=0; i<sampleFrames; i++) {
     for(int n=0; n<NUMCHANS; n++) {
-      // in L
       val[n] = inputs[n][i];
     
       // write to delay ine
-      // stdelayline[n][writepos[n]++] = val;
       delayline[n][writepos[n]++] = val[n];
       if(writepos[n]==delaysize[n]) { writepos[n] = 0; }
 
       // read from delay ine
-      // delayed = stdelayline[n][(int)readpos[n]];
       delayed[n] = delayline[n][(int)readpos[n]];
       readpos[n] += fwdhop[n];
 
