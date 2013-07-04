@@ -38,16 +38,16 @@ Flanger::Flanger (audioMasterCallback audioMaster)
 Flanger::~Flanger ()
 {
   for(int i=0; i<numchans; i++)
-    { delete [] stdelayline[i]; }
-  
+     { delete [] stdelayline[i]; }
+  delete [] stdelayline;
+
+  delete [] delayline;
   delete [] gain;
   delete [] rate;
   delete [] depth;
   delete [] fwdhop;
   delete [] writepos;
   delete [] readpos;
-  delete [] delayline;
-  delete [] stdelayline;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -74,14 +74,15 @@ void Flanger::initVST()
     fwdhop[i] = delta[i] + 1.0f;
     writepos[i] = 0;
     readpos[i] = 0;
+    
     stdelayline[i] = new float[(int)delaysize[i]];
     for(int j=0; j<(int)delaysize[j]; j++)
       { stdelayline[i][j] = 0; }
   }
 
-  // delayline = new float[(int)delaysize[0]];
-  // for(int j=0; j<(int)delaysize[0]; j++)
-  //   { delayline[j] = 0; }
+  delayline = new float[(int)delaysize[0]];
+  for(int j=0; j<(int)delaysize[0]; j++)
+    { delayline[j] = 0; }
   
   delete [] delta;
 }
@@ -257,7 +258,7 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
   float val, delayed;
   fwdhop[0] = ((delaysize[0]*rate[0]*2)/sampleRate) + 1.0f;
   
-  for(int i=0;i<sampleFrames;++i) {
+  for(int i=0; i<sampleFrames; i++) {
     val = inputs[0][i];
     
     // write to delay ine
