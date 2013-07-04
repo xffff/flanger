@@ -44,22 +44,31 @@ Flanger::~Flanger ()
 
 void Flanger::initVST()
 {
+  float *delta;
+  
   gain = new float[numchans];
   rate = new float[numchans];
   depth = new float[numchans];
+  delta = new float[numchans];
+  fwdhop = new float[numchans];
+  writepos = new int[numchans];
+  readpos = new float[numchans];
+  
   for(int i=0; i<numchans; ++i) {
     gain[i] = 1.f;
     rate[i] = 1.0f;
     depth[i] = 0.75f;
+    delaysize[i] = sampleRate * 0.02f;
+    delta[i] = (delaysize[i] * rate[i]) / sampleRate;
+    fwdhop[i] = delta[i] + 1.0f;
+    writepos[i] = 0;
+    readpos[i] = 0;
   }
   
-  float delta = (delaysize * rate[0]) / sampleRate;
-  fwdhop = delta + 1.0f;
-  delaysize = sampleRate * 0.02f;
-  writepos = 0;
-  readpos = 0;
-  delayline = new float[(int)delaysize];
-  for(int i=0; i<(int)delaysize; ++i) { delayline[i] = 0; }
+  delayline = new float[(int)delaysize[0]];
+  for(int i=0; i<(int)delaysize[0]; ++i) { delayline[i] = 0; }
+
+  delete [] delta;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -235,22 +244,22 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
   float* in2 = inputs[1];
   float* out2 = outputs[1];
   float val, delayed;
-  fwdhop = ((delaysize*rate[0]*2)/sampleRate) + 1.0f;
+  fwdhop[0] = ((delaysize[0]*rate[0]*2)/sampleRate) + 1.0f;
   
   for(int i=0;i<sampleFrames;++i) {
     val = in1[i];
     
     // write to delay ine
-    delayline[writepos++] = val;
-    if(writepos==delaysize) { writepos = 0; }
+    delayline[writepos[0]++] = val;
+    if(writepos[0]==delaysize[0]) { writepos[0] = 0; }
 
     // read from delay ine
-    delayed = delayline[(int)readpos];
-    readpos += fwdhop;
+    delayed = delayline[(int)readpos[0]];
+    readpos[0] += fwdhop[0];
 
     // update pos, could be going forward or backward
-    while((int)readpos >= delaysize) { readpos -= delaysize; }
-    while((int)readpos < 0) { readpos += delaysize; }
+    while((int)readpos[0] >= delaysize[0]) { readpos[0] -= delaysize[0]; }
+    while((int)readpos[0] < 0) { readpos[0] += delaysize[0]; }
 
     // mix
     out1[i] = (val + (delayed * depth[0])) * gain[0];
