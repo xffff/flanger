@@ -45,15 +45,17 @@ Flanger::~Flanger ()
 void Flanger::initVST()
 {
   gain = new float[numchans];
+  rate = new float[numchans];
+  depth = new float[numchans];
   for(int i=0; i<numchans; ++i) {
     gain[i] = 1.f;
+    rate[i] = 1.0f;
+    depth[i] = 0.75f;
   }
   
-  float delta = (delaysize * rate) / sampleRate;
+  float delta = (delaysize * rate[0]) / sampleRate;
   fwdhop = delta + 1.0f;
   delaysize = sampleRate * 0.02f;
-  rate = 1.0f;
-  depth = 0.75f;
   writepos = 0;
   readpos = 0;
   delayline = new float[(int)delaysize];
@@ -80,20 +82,20 @@ void Flanger::setParameter (VstInt32 index, float value)
     gain[0] = value;
     break;
   case 1:
-    depth = value;
+    depth[0] = value;
     break;
   case 2:
-    rate = value;
+    rate[0] = value;
     break;
    case 3:
      gain[1] = value;
      break;
-  // case 4:
-  //   rdepth = value;
-  //   break;
-  // case 5:
-  //   rrate = value;
-  //   break;
+  case 4:
+    depth[1] = value;
+    break;
+  case 5:
+    rate[1] = value;
+    break;
   }
 }
 
@@ -105,20 +107,20 @@ float Flanger::getParameter (VstInt32 index)
     return gain[0];
     break;
   case 1:
-    return depth;
+    return depth[0];
     break;
   case 2:
-    return rate;
+    return rate[0];
     break;
   case 3:
      return gain[1];
      break;
-  // case 4:
-  //   return rdepth;
-  //   break;
-  // case 5:
-  //   return rrate;
-  //   break;
+  case 4:
+    return depth[1];
+    break;
+  case 5:
+    return rate[1];
+    break;
   }
 }
 
@@ -127,23 +129,23 @@ void Flanger::getParameterName (VstInt32 index, char* label)
 {
   switch(index) {
   case 0:
-    vst_strncpy (label, "Gain", kVstMaxParamStrLen);
+    vst_strncpy (label, "L Gain", kVstMaxParamStrLen);
     break;
   case 1:
-    vst_strncpy (label, "Depth", kVstMaxParamStrLen);
+    vst_strncpy (label, "L Depth", kVstMaxParamStrLen);
     break;
   case 2:
-    vst_strncpy (label, "Rate", kVstMaxParamStrLen);
+    vst_strncpy (label, "L Rate", kVstMaxParamStrLen);
     break;
   case 3:
-    vst_strncpy (label, "Gain", kVstMaxParamStrLen);
+    vst_strncpy (label, "R Gain", kVstMaxParamStrLen);
     break;
-  // case 4:
-  //   vst_strncpy (label, "Depth", kVstMaxParamStrLen);
-  //   break;
-  // case 5:
-  //   vst_strncpy (label, "Rate", kVstMaxParamStrLen);
-  //   break;
+  case 4:
+    vst_strncpy (label, "R Depth", kVstMaxParamStrLen);
+    break;
+  case 5:
+    vst_strncpy (label, "R Rate", kVstMaxParamStrLen);
+    break;
   }
 }
 
@@ -155,20 +157,20 @@ void Flanger::getParameterDisplay (VstInt32 index, char* text)
     dB2string (gain[0], text, kVstMaxParamStrLen);
     break;
   case 1:
-    float2string (depth, text, kVstMaxParamStrLen);
+    float2string (depth[0], text, kVstMaxParamStrLen);
     break;
   case 2:
-    float2string (rate, text, kVstMaxParamStrLen);    
+    float2string (rate[0], text, kVstMaxParamStrLen);    
     break;
   case 3:
     dB2string (gain[1], text, kVstMaxParamStrLen);
     break;
-  // case 4:
-  //   float2string (rdepth, text, kVstMaxParamStrLen);
-  //   break;
-  // case 5:
-  //   float2string (rrate, text, kVstMaxParamStrLen);
-  //   break;
+  case 4:
+    float2string (depth[1], text, kVstMaxParamStrLen);
+    break;
+  case 5:
+    float2string (rate[1], text, kVstMaxParamStrLen);
+    break;
   }
 }
 
@@ -180,7 +182,7 @@ void Flanger::getParameterLabel (VstInt32 index, char* label)
     vst_strncpy (label, "dB", kVstMaxParamStrLen);
     break;
   case 1:
-    vst_strncpy (label, " ", kVstMaxParamStrLen);
+    vst_strncpy (label, "", kVstMaxParamStrLen);
     break;
   case 2:
     vst_strncpy (label, "Hz", kVstMaxParamStrLen);
@@ -188,12 +190,12 @@ void Flanger::getParameterLabel (VstInt32 index, char* label)
   case 3:
     vst_strncpy (label, "dB", kVstMaxParamStrLen);
     break;
-  // case 4:
-  //   vst_strncpy (label, " ", kVstMaxParamStrLen);
-  //   break;
-  // case 5:
-  //   vst_strncpy (label, "Hz", kVstMaxParamStrLen);
-  //   break;    
+  case 4:
+    vst_strncpy (label, "", kVstMaxParamStrLen);
+    break;
+  case 5:
+    vst_strncpy (label, "Hz", kVstMaxParamStrLen);
+    break;    
   }
 }
 
@@ -230,10 +232,10 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
 {
   float* in1 = inputs[0];
   float* out1 = outputs[0];
-  // float* in2 = inputs[1];
+  float* in2 = inputs[1];
   float* out2 = outputs[1];
   float val, delayed;
-  fwdhop = ((delaysize*rate*2)/sampleRate) + 1.0f;
+  fwdhop = ((delaysize*rate[0]*2)/sampleRate) + 1.0f;
   
   for(int i=0;i<sampleFrames;++i) {
     val = in1[i];
@@ -251,8 +253,8 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
     while((int)readpos < 0) { readpos += delaysize; }
 
     // mix
-    out1[i] = val + (delayed * depth) * gain[0];
-    out2[i] = val + (delayed * depth) * gain[1];
+    out1[i] = (val + (delayed * depth[0])) * gain[0];
+    out2[i] = (val + (delayed * depth[1])) * gain[1];
   }
 }
 

@@ -46,13 +46,13 @@ protected:
 	void initVST();
 	int numchans;
 	float *delayline;
-	float rate;
+	float *rate;
 	float delaysize;
 	float fwdhop;
 	float readpos;
 	int writepos;
 	float *gain;
-	float depth;
+	float *depth;
 	char programName[kVstMaxProgNameLen + 1];
 };
 
