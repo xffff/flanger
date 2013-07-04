@@ -37,7 +37,7 @@ Flanger::Flanger (audioMasterCallback audioMaster)
 //--------------------------------------------------------------------------------------------
 Flanger::~Flanger ()
 {
-  delete [] delayline;
+  delete [] stdelayline;
 }
 
 //--------------------------------------------------------------------------------------------
@@ -53,6 +53,8 @@ void Flanger::initVST()
   fwdhop = new float[numchans];
   writepos = new int[numchans];
   readpos = new float[numchans];
+  // stdelayline = new float*[numchans];
+  
   
   for(int i=0; i<numchans; ++i) {
     gain[i] = 1.f;
@@ -63,11 +65,15 @@ void Flanger::initVST()
     fwdhop[i] = delta[i] + 1.0f;
     writepos[i] = 0;
     readpos[i] = 0;
+    // stdelayline[i] = new float[(int)delaysize[i]];
+    // for(int j=0; j<(int)delaysize[j]; ++j)
+    //    { stdelayline[i][j] = 0; }
   }
-  
-  delayline = new float[(int)delaysize[0]];
-  for(int i=0; i<(int)delaysize[0]; ++i) { delayline[i] = 0; }
 
+  delayline = new float[(int)delaysize[0]];
+  for(int j=0; j<(int)delaysize[0]; ++j)
+    { delayline[j] = 0; }
+  
   delete [] delta;
 }
 
@@ -239,21 +245,23 @@ VstInt32 Flanger::getVendorVersion ()
 
 void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sampleFrames)
 {
-  float* in1 = inputs[0];
-  float* out1 = outputs[0];
-  float* in2 = inputs[1];
-  float* out2 = outputs[1];
+  // float* in1 = inputs[0];
+  // float* out1 = outputs[0];
+  // float* in2 = inputs[1];
+  // float* out2 = outputs[1];
   float val, delayed;
   fwdhop[0] = ((delaysize[0]*rate[0]*2)/sampleRate) + 1.0f;
   
   for(int i=0;i<sampleFrames;++i) {
-    val = in1[i];
+    val = inputs[0][i];
     
     // write to delay ine
+    // stdelayline[0][writepos[0]++] = val;
     delayline[writepos[0]++] = val;
     if(writepos[0]==delaysize[0]) { writepos[0] = 0; }
 
     // read from delay ine
+    // delayed = stdelayline[0][(int)readpos[0]];
     delayed = delayline[(int)readpos[0]];
     readpos[0] += fwdhop[0];
 
@@ -262,8 +270,8 @@ void Flanger::processReplacing (float** inputs, float** outputs, VstInt32 sample
     while((int)readpos[0] < 0) { readpos[0] += delaysize[0]; }
 
     // mix
-    out1[i] = (val + (delayed * depth[0])) * gain[0];
-    out2[i] = (val + (delayed * depth[1])) * gain[1];
+    outputs[0][i] = (val + (delayed * depth[0])) * gain[0];
+    outputs[1][i] = (val + (delayed * depth[1])) * gain[1];
   }
 }
 

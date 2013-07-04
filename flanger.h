@@ -44,7 +44,8 @@ public:
 
 protected:
 	void initVST();
-	int numchans;
+	int numchans;	
+	float **stdelayline;
 	float *delayline;
 	float *rate;
 	float *delaysize;
