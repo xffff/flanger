@@ -44,14 +44,23 @@ public:
 
 protected:
 	void initVST();
-	float *delayline;
-	float rate;
-	float delaysize;
-	float fwdhop;
-	float readpos;
-	int writepos;
-	float gain;
-	float depth;
+	int numchans;
+	float *ldelayline;
+	float lrate;
+	float ldelaysize;
+	float lfwdhop;
+	float lreadpos;
+	int lwritepos;
+	float lgain;
+	float ldepth;
+	float *rdelayline;
+	float rrate;
+	float rdelaysize;
+	float rfwdhop;
+	float rreadpos;
+	int rwritepos;
+	float rgain;
+	float rdepth;
 	char programName[kVstMaxProgNameLen + 1];
 };
 
