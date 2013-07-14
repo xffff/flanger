@@ -1,9 +1,7 @@
 //--------------------------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// Version 2.4		$Date: 2006/11/13 09:08:27 $
 //
 // Filename     : flanger.cpp
-// Created by   : Steinberg Media Technologies
+// Created by   : Michael Murphy
 // Description  : Stereo plugin which applies flange, algorithm taken from Dan Stowell's
 //                example in the SuperCollider book. (ch25)
 //
